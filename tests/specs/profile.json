@@ -1,19 +1,50 @@
 [
   {
-    "name": "/profile",
+    "name": "/profile shows unregistered state",
     "steps": [
       {
+        "send": { "text": "/profile" },
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Display user account details and listening history"
+              "text": "You're not registered yet. Tap /start to get started."
             }
           }
-        ],
-        "send": {
-          "text": "/profile"
-        }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "profile button shows unregistered state",
+    "steps": [
+      {
+        "send": { "callback": "menu:profile" },
+        "expect": [
+          {
+            "method": "editMessageText",
+            "payload": {
+              "text": "You're not registered yet. Tap /start to get started."
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "registration then profile shows user data",
+    "steps": [
+      { "send": { "text": "/start" }, "expect": [] },
+      {
+        "send": { "text": "/profile" },
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "👤 Your profile\n\nQuality: FLAC\nLanguage: en\nTracks played: 0"
+            }
+          }
+        ]
       }
     ]
   }

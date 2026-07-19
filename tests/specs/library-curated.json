@@ -1,19 +1,17 @@
 [
   {
-    "name": "Browse Library",
+    "name": "Browse Library shows empty state",
     "steps": [
       {
+        "send": { "callback": "library:curated" },
         "expect": [
           {
-            "method": "sendMessage",
+            "method": "editMessageText",
             "payload": {
-              "text": "Show curated playlists and owner-uploaded collections"
+              "text": "The library is empty. Check back soon — new tracks are added regularly."
             }
           }
-        ],
-        "send": {
-          "callback": "library:curated"
-        }
+        ]
       }
     ]
   }
