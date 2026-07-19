@@ -18,6 +18,7 @@ export interface Session {
     album?: string;
     sourceType?: string;
   };
+  editTrackId?: string;
 }
 
 export type Ctx = BotContext<Session>;
@@ -55,7 +56,7 @@ export async function buildBot(token: string) {
     bot.use(mod.default);
   }
 
-  bot.on("message", (ctx) => ctx.reply("Sorry, I didn't understand that. Try /help."));
+  bot.on("message", (ctx) => ctx.reply("Maaf, saya tidak mengerti. Ketuk /help."));
 
   return bot;
 }

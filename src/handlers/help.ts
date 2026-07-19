@@ -6,11 +6,11 @@ const composer = new Composer<Ctx>();
 
 const HELP =
   "ℹ️ High-Res Music Streamer\n\n" +
-  "Stream and download FLAC/ALAC tracks from a curated library.\n\n" +
-  "Tap /start to open the menu, then pick what you want from the buttons.\n\n" +
-  "Everything is reachable by tapping — no commands to remember.";
+  "Streaming dan download track FLAC/ALAC dari koleksi kurasi.\n\n" +
+  "Ketuk /start untuk membuka menu, lalu pilih yang kamu inginkan.\n\n" +
+  "Semua fitur bisa diakses dengan mengetuk tombol.";
 
-const backToMenu = inlineKeyboard([[inlineButton("⬅️ Back to menu", "menu:main")]]);
+const backToMenu = inlineKeyboard([[inlineButton("⬅️ Kembali ke menu", "menu:main")]]);
 
 composer.command("help", async (ctx) => {
   await ctx.reply(HELP);

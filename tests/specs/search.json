@@ -8,7 +8,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Type a track name, artist, or album to search."
+              "text": "Ketik nama track, artis, atau album untuk mencari."
             }
           }
         ]
@@ -24,7 +24,7 @@
           {
             "method": "editMessageText",
             "payload": {
-              "text": "Type a track name, artist, or album to search."
+              "text": "Ketik nama track, artis, atau album untuk mencari."
             }
           }
         ]
@@ -42,7 +42,23 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "No tracks found for \"nonexistent track xyz\". Try a different search."
+              "text": "Tidak ada track ditemukan untuk \"nonexistent track xyz\". Coba kata kunci lain."
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "/search with query parameter searches directly",
+    "steps": [
+      {
+        "send": { "text": "/search rock" },
+        "expect": [
+          {
+            "method": "sendMessage",
+            "payload": {
+              "text": "Tidak ada track ditemukan untuk \"rock\". Coba kata kunci lain."
             }
           }
         ]

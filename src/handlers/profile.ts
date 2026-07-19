@@ -7,16 +7,16 @@ import {
 } from "../toolkit/index.js";
 import { getUser, getTrack, saveUser } from "../store.js";
 
-registerMainMenuItem({ label: "👤 Profile", data: "menu:profile", order: 30 });
+registerMainMenuItem({ label: "👤 Profil", data: "menu:profile", order: 30 });
 
 const composer = new Composer<Ctx>();
 
 function profileText(user: { preferences: { quality: string; language: string }; listeningHistory: string[]; email?: string }): string {
   const lines = [
-    "👤 Your profile\n",
-    `Quality: ${user.preferences.quality.toUpperCase()}`,
-    `Language: ${user.preferences.language}`,
-    `Tracks played: ${user.listeningHistory.length}`,
+    "👤 Profilmu\n",
+    `Kualitas: ${user.preferences.quality.toUpperCase()}`,
+    `Bahasa: ${user.preferences.language}`,
+    `Track diputar: ${user.listeningHistory.length}`,
   ];
   return lines.join("\n");
 }
@@ -24,23 +24,23 @@ function profileText(user: { preferences: { quality: string; language: string };
 composer.command("profile", async (ctx) => {
   const userId = ctx.from?.id;
   if (!userId) {
-    await ctx.reply("Couldn't load your profile. Try /start first.");
+    await ctx.reply("Tidak bisa memuat profil. Ketuk /start terlebih dahulu.");
     return;
   }
   const user = await getUser(userId);
   if (!user) {
-    await ctx.reply("You're not registered yet. Tap /start to get started.", {
+    await ctx.reply("Kamu belum terdaftar. Ketuk /start untuk memulai.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   await ctx.reply(profileText(user), {
     reply_markup: inlineKeyboard([
-      [inlineButton("⚙️ Settings", "profile:settings")],
-      [inlineButton("📜 Listening history", "profile:history")],
-      [inlineButton("⬅️ Back to menu", "menu:main")],
+      [inlineButton("⚙️ Pengaturan", "profile:settings")],
+      [inlineButton("📜 Riwayat putar", "profile:history")],
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
     ]),
   });
 });
@@ -49,27 +49,27 @@ composer.callbackQuery("menu:profile", async (ctx) => {
   await ctx.answerCallbackQuery();
   const userId = ctx.from?.id;
   if (!userId) {
-    await ctx.editMessageText("Couldn't load your profile.", {
+    await ctx.editMessageText("Tidak bisa memuat profil.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   const user = await getUser(userId);
   if (!user) {
-    await ctx.editMessageText("You're not registered yet. Tap /start to get started.", {
+    await ctx.editMessageText("Kamu belum terdaftar. Ketuk /start untuk memulai.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   await ctx.editMessageText(profileText(user), {
     reply_markup: inlineKeyboard([
-      [inlineButton("⚙️ Settings", "profile:settings")],
-      [inlineButton("📜 Listening history", "profile:history")],
-      [inlineButton("⬅️ Back to menu", "menu:main")],
+      [inlineButton("⚙️ Pengaturan", "profile:settings")],
+      [inlineButton("📜 Riwayat putar", "profile:history")],
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
     ]),
   });
 });
@@ -81,7 +81,7 @@ composer.callbackQuery("profile:settings", async (ctx) => {
   const user = await getUser(userId);
   if (!user) return;
   await ctx.editMessageText(
-    `⚙️ Settings\n\nCurrent quality: ${user.preferences.quality.toUpperCase()}`,
+    `⚙️ Pengaturan\n\nKualitas saat ini: ${user.preferences.quality.toUpperCase()}\nBahasa: ${user.preferences.language === "id" ? "Indonesia" : "English"}`,
     {
       reply_markup: inlineKeyboard([
         [
@@ -92,7 +92,8 @@ composer.callbackQuery("profile:settings", async (ctx) => {
           inlineButton("MP3", "profile:setquality:mp3"),
           inlineButton("AAC", "profile:setquality:aac"),
         ],
-        [inlineButton("⬅️ Back to profile", "menu:profile")],
+        [inlineButton("Bahasa: Indonesia", "profile:setlang:id")],
+        [inlineButton("⬅️ Kembali ke profil", "menu:profile")],
       ]),
     },
   );
@@ -107,9 +108,26 @@ composer.callbackQuery(/^profile:setquality:(.+)$/, async (ctx) => {
   if (!user) return;
   user.preferences.quality = quality;
   await saveUser(user);
-  await ctx.editMessageText(`Quality set to ${quality.toUpperCase()}.`, {
+  await ctx.editMessageText(`Kualitas diatur ke ${quality.toUpperCase()}.`, {
     reply_markup: inlineKeyboard([
-      [inlineButton("⬅️ Back to profile", "menu:profile")],
+      [inlineButton("⬅️ Kembali ke profil", "menu:profile")],
+    ]),
+  });
+});
+
+composer.callbackQuery(/^profile:setlang:(.+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const lang = ctx.match[1];
+  const userId = ctx.from?.id;
+  if (!userId) return;
+  const user = await getUser(userId);
+  if (!user) return;
+  user.preferences.language = lang;
+  await saveUser(user);
+  const langName = lang === "id" ? "Indonesia" : "English";
+  await ctx.editMessageText(`Bahasa diatur ke ${langName}.`, {
+    reply_markup: inlineKeyboard([
+      [inlineButton("⬅️ Kembali ke profil", "menu:profile")],
     ]),
   });
 });
@@ -122,17 +140,17 @@ composer.callbackQuery("profile:history", async (ctx) => {
   if (!user) return;
 
   if (user.listeningHistory.length === 0) {
-    await ctx.editMessageText("No listening history yet. Start playing some tracks!", {
+    await ctx.editMessageText("Belum ada riwayat putar. Mulai putar beberapa track!", {
       reply_markup: inlineKeyboard([
-        [inlineButton("🔍 Search", "menu:search")],
-        [inlineButton("⬅️ Back to profile", "menu:profile")],
+        [inlineButton("🔍 Cari", "menu:search")],
+        [inlineButton("⬅️ Kembali ke profil", "menu:profile")],
       ]),
     });
     return;
   }
 
   const recent = user.listeningHistory.slice(-10).reverse();
-  const lines: string[] = ["📜 Recent plays:\n"];
+  const lines: string[] = ["📜 Putar terakhir:\n"];
   const rows: ReturnType<typeof inlineButton>[][] = [];
 
   for (const trackId of recent) {
@@ -144,7 +162,7 @@ composer.callbackQuery("profile:history", async (ctx) => {
     ]);
   }
 
-  rows.push([inlineButton("⬅️ Back to profile", "menu:profile")]);
+  rows.push([inlineButton("⬅️ Kembali ke profil", "menu:profile")]);
 
   await ctx.editMessageText(lines.join("\n"), {
     reply_markup: inlineKeyboard(rows),

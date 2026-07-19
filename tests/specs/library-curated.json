@@ -8,7 +8,7 @@
           {
             "method": "editMessageText",
             "payload": {
-              "text": "The library is empty. Check back soon — new tracks are added regularly."
+              "text": "Koleksi kosong. Cek lagi nanti — track baru ditambahkan secara berkala."
             }
           }
         ]

@@ -7,7 +7,7 @@ import {
 } from "../toolkit/index.js";
 import { getCuratedPlaylists, getTrack, getAllTracks } from "../store.js";
 
-registerMainMenuItem({ label: "🎵 Library", data: "library:curated", order: 20 });
+registerMainMenuItem({ label: "🎵 Koleksi", data: "library:curated", order: 20 });
 
 const composer = new Composer<Ctx>();
 
@@ -18,10 +18,10 @@ composer.callbackQuery("library:curated", async (ctx) => {
 
   if (playlists.length === 0 && allTracks.length === 0) {
     await ctx.editMessageText(
-      "The library is empty. Check back soon — new tracks are added regularly.",
+      "Koleksi kosong. Cek lagi nanti — track baru ditambahkan secara berkala.",
       {
         reply_markup: inlineKeyboard([
-          [inlineButton("⬅️ Back to menu", "menu:main")],
+          [inlineButton("⬅️ Kembali ke menu", "menu:main")],
         ]),
       },
     );
@@ -33,7 +33,7 @@ composer.callbackQuery("library:curated", async (ctx) => {
   for (const pl of playlists) {
     rows.push([
       inlineButton(
-        `🎶 ${pl.name} (${pl.trackIds.length} tracks)`,
+        `🎶 ${pl.name} (${pl.trackIds.length} track)`,
         `playlist:view:${pl.id}`,
       ),
     ]);
@@ -41,13 +41,13 @@ composer.callbackQuery("library:curated", async (ctx) => {
 
   if (allTracks.length > 0) {
     rows.push([
-      inlineButton(`📀 All Tracks (${allTracks.length})`, "library:alltracks"),
+      inlineButton(`📀 Semua Track (${allTracks.length})`, "library:alltracks"),
     ]);
   }
 
-  rows.push([inlineButton("⬅️ Back to menu", "menu:main")]);
+  rows.push([inlineButton("⬅️ Kembali ke menu", "menu:main")]);
 
-  await ctx.editMessageText("Browse curated playlists and owner-uploaded collections:", {
+  await ctx.editMessageText("Jelajahi playlist kurasi dan koleksi yang diunggah:", {
     reply_markup: inlineKeyboard(rows),
   });
 });
@@ -57,18 +57,18 @@ composer.callbackQuery(/^playlist:view:(.+)$/, async (ctx) => {
   const playlists = await getCuratedPlaylists();
   const playlist = playlists.find((p) => p.id === ctx.match[1]);
   if (!playlist) {
-    await ctx.editMessageText("Playlist not found.", {
+    await ctx.editMessageText("Playlist tidak ditemukan.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to library", "library:curated")],
+        [inlineButton("⬅️ Kembali ke koleksi", "library:curated")],
       ]),
     });
     return;
   }
 
   if (playlist.trackIds.length === 0) {
-    await ctx.editMessageText(`"${playlist.name}" is empty.`, {
+    await ctx.editMessageText(`"${playlist.name}" kosong.`, {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to library", "library:curated")],
+        [inlineButton("⬅️ Kembali ke koleksi", "library:curated")],
       ]),
     });
     return;
@@ -87,10 +87,10 @@ composer.callbackQuery(/^playlist:view:(.+)$/, async (ctx) => {
   }
 
   if (playlist.trackIds.length > 10) {
-    lines.push(`\n…and ${playlist.trackIds.length - 10} more`);
+    lines.push(`\ndan ${playlist.trackIds.length - 10} lainnya`);
   }
 
-  rows.push([inlineButton("⬅️ Back to library", "library:curated")]);
+  rows.push([inlineButton("⬅️ Kembali ke koleksi", "library:curated")]);
 
   await ctx.editMessageText(lines.join("\n"), {
     reply_markup: inlineKeyboard(rows),
@@ -102,15 +102,15 @@ composer.callbackQuery("library:alltracks", async (ctx) => {
   const tracks = await getAllTracks();
 
   if (tracks.length === 0) {
-    await ctx.editMessageText("No tracks available yet.", {
+    await ctx.editMessageText("Belum ada track tersedia.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to library", "library:curated")],
+        [inlineButton("⬅️ Kembali ke koleksi", "library:curated")],
       ]),
     });
     return;
   }
 
-  const lines: string[] = ["📀 All Tracks:\n"];
+  const lines: string[] = ["📀 Semua Track:\n"];
   const rows: ReturnType<typeof inlineButton>[][] = [];
 
   for (const track of tracks.slice(0, 10)) {
@@ -121,10 +121,10 @@ composer.callbackQuery("library:alltracks", async (ctx) => {
   }
 
   if (tracks.length > 10) {
-    lines.push(`\n…and ${tracks.length - 10} more`);
+    lines.push(`\ndan ${tracks.length - 10} lainnya`);
   }
 
-  rows.push([inlineButton("⬅️ Back to library", "library:curated")]);
+  rows.push([inlineButton("⬅️ Kembali ke koleksi", "library:curated")]);
 
   await ctx.editMessageText(lines.join("\n"), {
     reply_markup: inlineKeyboard(rows),

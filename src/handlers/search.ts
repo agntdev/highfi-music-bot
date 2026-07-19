@@ -10,9 +10,10 @@ import {
   getTrack,
   getUser,
   saveUser,
+  isAdmin,
 } from "../store.js";
 
-registerMainMenuItem({ label: "🔍 Search", data: "menu:search", order: 10 });
+registerMainMenuItem({ label: "🔍 Cari", data: "menu:search", order: 10 });
 
 const composer = new Composer<Ctx>();
 
@@ -21,9 +22,9 @@ composer.command("search", async (ctx) => {
   if (query) {
     const results = await searchTracks(query);
     if (results.length === 0) {
-      await ctx.reply(`No tracks found for "${query}". Try a different search.`, {
+      await ctx.reply(`Tidak ada track ditemukan untuk "${query}". Coba kata kunci lain.`, {
         reply_markup: inlineKeyboard([
-          [inlineButton("⬅️ Back to menu", "menu:main")],
+          [inlineButton("⬅️ Kembali ke menu", "menu:main")],
         ]),
       });
       return;
@@ -34,15 +35,15 @@ composer.command("search", async (ctx) => {
     const buttons = results.slice(0, 5).map((t) => [
       inlineButton(`${t.artist} — ${t.title}`, `track:play:${t.id}`),
     ]);
-    buttons.push([inlineButton("⬅️ Back to menu", "menu:main")]);
-    await ctx.reply(`Found ${results.length} track${results.length > 1 ? "s" : ""}:\n\n${lines.join("\n")}`, {
+    buttons.push([inlineButton("⬅️ Kembali ke menu", "menu:main")]);
+    await ctx.reply(`Ditemukan ${results.length} track:\n\n${lines.join("\n")}`, {
       reply_markup: inlineKeyboard(buttons),
     });
   } else {
     ctx.session.step = "awaiting_search";
-    await ctx.reply("Type a track name, artist, or album to search.", {
+    await ctx.reply("Ketik nama track, artis, atau album untuk mencari.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
   }
@@ -51,9 +52,9 @@ composer.command("search", async (ctx) => {
 composer.callbackQuery("menu:search", async (ctx) => {
   await ctx.answerCallbackQuery();
   ctx.session.step = "awaiting_search";
-  await ctx.editMessageText("Type a track name, artist, or album to search.", {
+  await ctx.editMessageText("Ketik nama track, artis, atau album untuk mencari.", {
     reply_markup: inlineKeyboard([
-      [inlineButton("⬅️ Back to menu", "menu:main")],
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
     ]),
   });
 });
@@ -64,10 +65,10 @@ composer.on("message:text", async (ctx, next) => {
   ctx.session.step = undefined;
   const results = await searchTracks(query);
   if (results.length === 0) {
-    await ctx.reply(`No tracks found for "${query}". Try a different search.`, {
+    await ctx.reply(`Tidak ada track ditemukan untuk "${query}". Coba kata kunci lain.`, {
       reply_markup: inlineKeyboard([
-        [inlineButton("🔍 Search again", "menu:search")],
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("🔍 Cari lagi", "menu:search")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
@@ -78,9 +79,9 @@ composer.on("message:text", async (ctx, next) => {
   const buttons = results.slice(0, 5).map((t) => [
     inlineButton(`${t.artist} — ${t.title}`, `track:play:${t.id}`),
   ]);
-  buttons.push([inlineButton("🔍 Search again", "menu:search")]);
-  buttons.push([inlineButton("⬅️ Back to menu", "menu:main")]);
-  await ctx.reply(`Found ${results.length} track${results.length > 1 ? "s" : ""}:\n\n${lines.join("\n")}`, {
+  buttons.push([inlineButton("🔍 Cari lagi", "menu:search")]);
+  buttons.push([inlineButton("⬅️ Kembali ke menu", "menu:main")]);
+  await ctx.reply(`Ditemukan ${results.length} track:\n\n${lines.join("\n")}`, {
     reply_markup: inlineKeyboard(buttons),
   });
 });
@@ -90,9 +91,9 @@ composer.callbackQuery(/^track:play:(.+)$/, async (ctx) => {
   const trackId = ctx.match[1];
   const track = await getTrack(trackId);
   if (!track) {
-    await ctx.editMessageText("Track not found. It may have been removed.", {
+    await ctx.editMessageText("Track tidak ditemukan. Mungkin sudah dihapus.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
@@ -101,13 +102,22 @@ composer.callbackQuery(/^track:play:(.+)$/, async (ctx) => {
     inlineButton(`▶️ Stream ${f.toUpperCase()}`, `track:stream:${trackId}:${f}`),
   ]);
   formatButtons.push([
-    inlineButton("⬅️ Back to menu", "menu:main"),
+    inlineButton("⬇️ Download", `track:download:${trackId}`),
+  ]);
+  const userId = ctx.from?.id;
+  if (userId && await isAdmin(userId)) {
+    formatButtons.push([
+      inlineButton("✏️ Edit", `admin:edittrack:${trackId}`),
+      inlineButton("🗑 Hapus", `admin:deletetrack:${trackId}`),
+    ]);
+  }
+  formatButtons.push([
+    inlineButton("⬅️ Kembali ke menu", "menu:main"),
   ]);
   await ctx.editMessageText(
-    `Now playing:\n\n${track.artist} — ${track.title}\nAlbum: ${track.album}\n\nChoose a format:`,
+    `Sekarang memutar:\n\n${track.artist} — ${track.title}\nAlbum: ${track.album}\n\nGratis untuk semua kualitas — pilih format:`,
     { reply_markup: inlineKeyboard(formatButtons) },
   );
-  const userId = ctx.from?.id;
   if (userId) {
     const user = await getUser(userId);
     if (user) {
@@ -121,73 +131,118 @@ composer.callbackQuery(/^track:play:(.+)$/, async (ctx) => {
 });
 
 composer.callbackQuery(/^track:stream:(.+):(.+)$/, async (ctx) => {
-  await ctx.answerCallbackQuery("Starting stream…");
+  await ctx.answerCallbackQuery("Memulai stream…");
   const trackId = ctx.match[1];
   const format = ctx.match[2];
   const track = await getTrack(trackId);
   if (!track) {
-    await ctx.editMessageText("Track not found.", {
+    await ctx.editMessageText("Track tidak ditemukan.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   await ctx.editMessageText(
-    `▶️ Streaming: ${track.artist} — ${track.title}\nFormat: ${format.toUpperCase()}\n\nUse the controls below.`,
+    `▶️ Streaming: ${track.artist} — ${track.title}\nFormat: ${format.toUpperCase()}\n\nGunakan kontrol di bawah.`,
     {
       reply_markup: inlineKeyboard([
         [
-          inlineButton("⏸ Pause", `track:pause:${trackId}`),
-          inlineButton("⏹ Stop", `track:stop:${trackId}`),
+          inlineButton("⏸ Jeda", `track:pause:${trackId}`),
+          inlineButton("⏹ Berhenti", `track:stop:${trackId}`),
         ],
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬇️ Download", `track:download:${trackId}`)],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     },
   );
 });
 
 composer.callbackQuery(/^track:pause:(.+)$/, async (ctx) => {
-  await ctx.answerCallbackQuery("Paused");
+  await ctx.answerCallbackQuery("Dijeda");
   const trackId = ctx.match[1];
   await ctx.editMessageText(
-    "⏸ Paused.\n\nTap Resume to continue or Stop to end.",
+    "⏸ Dijeda.\n\nKetuk Lanjutkan untuk melanjutkan atau Berhenti untuk menghentikan.",
     {
       reply_markup: inlineKeyboard([
         [
-          inlineButton("▶️ Resume", `track:resume:${trackId}`),
-          inlineButton("⏹ Stop", `track:stop:${trackId}`),
+          inlineButton("▶️ Lanjutkan", `track:resume:${trackId}`),
+          inlineButton("⏹ Berhenti", `track:stop:${trackId}`),
         ],
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     },
   );
 });
 
 composer.callbackQuery(/^track:resume:(.+)$/, async (ctx) => {
-  await ctx.answerCallbackQuery("Resuming…");
+  await ctx.answerCallbackQuery("Melanjutkan…");
   const trackId = ctx.match[1];
   const track = await getTrack(trackId);
   const title = track ? `${track.artist} — ${track.title}` : "Track";
   await ctx.editMessageText(
-    `▶️ Resumed: ${title}\n\nUse the controls below.`,
+    `▶️ Dilanjutkan: ${title}\n\nGunakan kontrol di bawah.`,
     {
       reply_markup: inlineKeyboard([
         [
-          inlineButton("⏸ Pause", `track:pause:${trackId}`),
-          inlineButton("⏹ Stop", `track:stop:${trackId}`),
+          inlineButton("⏸ Jeda", `track:pause:${trackId}`),
+          inlineButton("⏹ Berhenti", `track:stop:${trackId}`),
         ],
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬇️ Download", `track:download:${trackId}`)],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     },
   );
 });
 
 composer.callbackQuery(/^track:stop:(.+)$/, async (ctx) => {
-  await ctx.answerCallbackQuery("Stopped");
-  await ctx.editMessageText("⏹ Playback stopped.", {
+  await ctx.answerCallbackQuery("Dihentikan");
+  await ctx.editMessageText("⏹ Pemutaran dihentikan.", {
     reply_markup: inlineKeyboard([
-      [inlineButton("⬅️ Back to menu", "menu:main")],
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
+    ]),
+  });
+});
+
+composer.callbackQuery(/^track:download:(.+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery();
+  const trackId = ctx.match[1];
+  const track = await getTrack(trackId);
+  if (!track) {
+    await ctx.editMessageText("Track tidak ditemukan.", {
+      reply_markup: inlineKeyboard([
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
+      ]),
+    });
+    return;
+  }
+  const formatButtons = track.formats.map((f) => [
+    inlineButton(`⬇️ ${f.toUpperCase()}`, `track:sendfile:${trackId}:${f}`),
+  ]);
+  formatButtons.push([inlineButton("⬅️ Kembali", `track:play:${trackId}`)]);
+  await ctx.editMessageText(
+    `Pilih format untuk download:\n\n${track.artist} — ${track.title}\n\nSemua format tersedia secara gratis.`,
+    { reply_markup: inlineKeyboard(formatButtons) },
+  );
+});
+
+composer.callbackQuery(/^track:sendfile:(.+):(.+)$/, async (ctx) => {
+  await ctx.answerCallbackQuery("Menyiapkan file…");
+  const trackId = ctx.match[1];
+  const format = ctx.match[2];
+  const track = await getTrack(trackId);
+  if (!track) {
+    await ctx.reply("Track tidak ditemukan.", {
+      reply_markup: inlineKeyboard([
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
+      ]),
+    });
+    return;
+  }
+  const caption = `${track.artist} — ${track.title}\nAlbum: ${track.album}\nFormat: ${format.toUpperCase()}`;
+  await ctx.reply(caption, {
+    reply_markup: inlineKeyboard([
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
     ]),
   });
 });
