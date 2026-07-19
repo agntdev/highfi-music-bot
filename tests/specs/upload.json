@@ -1,19 +1,33 @@
 [
   {
-    "name": "/upload",
+    "name": "/upload requires admin access",
     "steps": [
       {
+        "send": { "text": "/upload" },
         "expect": [
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Admin interface for adding new tracks"
+              "text": "Admin access required. Contact the bot owner for permissions."
             }
           }
-        ],
-        "send": {
-          "text": "/upload"
-        }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "upload button requires admin access",
+    "steps": [
+      {
+        "send": { "callback": "menu:upload" },
+        "expect": [
+          {
+            "method": "editMessageText",
+            "payload": {
+              "text": "Admin access required."
+            }
+          }
+        ]
       }
     ]
   }
