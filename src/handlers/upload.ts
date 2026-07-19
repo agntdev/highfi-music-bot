@@ -7,25 +7,25 @@ import {
 } from "../toolkit/index.js";
 import { isAdmin, saveTrack, getTrackIds, addTrackToIndex, now } from "../store.js";
 
-registerMainMenuItem({ label: "📤 Upload", data: "menu:upload", order: 40, });
+registerMainMenuItem({ label: "📤 Upload", data: "menu:upload", order: 40 });
 
 const composer = new Composer<Ctx>();
 
 composer.command("upload", async (ctx) => {
   const userId = ctx.from?.id;
   if (!userId || !(await isAdmin(userId))) {
-    await ctx.reply("Admin access required. Contact the bot owner for permissions.", {
+    await ctx.reply("Akses admin diperlukan. Hubungi pemilik bot untuk izin.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   ctx.session.step = "upload_title";
   ctx.session.uploadData = {};
-  await ctx.reply("📤 New track upload\n\nWhat's the track title?", {
+  await ctx.reply("📤 Upload track baru\n\nJudul track?", {
     reply_markup: inlineKeyboard([
-      [inlineButton("Cancel", "upload:cancel")],
+      [inlineButton("Batal", "upload:cancel")],
     ]),
   });
 });
@@ -34,18 +34,18 @@ composer.callbackQuery("menu:upload", async (ctx) => {
   await ctx.answerCallbackQuery();
   const userId = ctx.from?.id;
   if (!userId || !(await isAdmin(userId))) {
-    await ctx.editMessageText("Admin access required.", {
+    await ctx.editMessageText("Akses admin diperlukan.", {
       reply_markup: inlineKeyboard([
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     });
     return;
   }
   ctx.session.step = "upload_title";
   ctx.session.uploadData = {};
-  await ctx.editMessageText("📤 New track upload\n\nWhat's the track title?", {
+  await ctx.editMessageText("📤 Upload track baru\n\nJudul track?", {
     reply_markup: inlineKeyboard([
-      [inlineButton("Cancel", "upload:cancel")],
+      [inlineButton("Batal", "upload:cancel")],
     ]),
   });
 });
@@ -54,9 +54,9 @@ composer.callbackQuery("upload:cancel", async (ctx) => {
   await ctx.answerCallbackQuery();
   ctx.session.step = undefined;
   ctx.session.uploadData = undefined;
-  await ctx.editMessageText("Upload cancelled.", {
+  await ctx.editMessageText("Upload dibatalkan.", {
     reply_markup: inlineKeyboard([
-      [inlineButton("⬅️ Back to menu", "menu:main")],
+      [inlineButton("⬅️ Kembali ke menu", "menu:main")],
     ]),
   });
 });
@@ -69,7 +69,7 @@ composer.on("message:text", async (ctx, next) => {
   if (!userId || !(await isAdmin(userId))) {
     ctx.session.step = undefined;
     ctx.session.uploadData = undefined;
-    await ctx.reply("Admin access required.");
+    await ctx.reply("Akses admin diperlukan.");
     return;
   }
 
@@ -81,9 +81,9 @@ composer.on("message:text", async (ctx, next) => {
     case "upload_title": {
       ctx.session.uploadData.title = ctx.message.text.trim();
       ctx.session.step = "upload_artist";
-      await ctx.reply("Artist name?", {
+      await ctx.reply("Nama artis?", {
         reply_markup: inlineKeyboard([
-          [inlineButton("Cancel", "upload:cancel")],
+          [inlineButton("Batal", "upload:cancel")],
         ]),
       });
       break;
@@ -91,9 +91,9 @@ composer.on("message:text", async (ctx, next) => {
     case "upload_artist": {
       ctx.session.uploadData.artist = ctx.message.text.trim();
       ctx.session.step = "upload_album";
-      await ctx.reply("Album name?", {
+      await ctx.reply("Nama album?", {
         reply_markup: inlineKeyboard([
-          [inlineButton("Cancel", "upload:cancel")],
+          [inlineButton("Batal", "upload:cancel")],
         ]),
       });
       break;
@@ -102,12 +102,12 @@ composer.on("message:text", async (ctx, next) => {
       ctx.session.uploadData.album = ctx.message.text.trim();
       ctx.session.step = "upload_source";
       await ctx.reply(
-        "Source type?\n\n• owner — You uploaded this track\n• licensed — Licensed from a third party",
+        "Tipe sumber?\n\n• owner — Kamu mengunggah track ini\n• licensed — Lisensi dari pihak ketiga",
         {
           reply_markup: inlineKeyboard([
             [inlineButton("Owner", "upload:setsource:owner")],
             [inlineButton("Licensed", "upload:setsource:licensed")],
-            [inlineButton("Cancel", "upload:cancel")],
+            [inlineButton("Batal", "upload:cancel")],
           ]),
         },
       );
@@ -127,18 +127,18 @@ composer.callbackQuery(/^upload:setsource:(.+)$/, async (ctx) => {
 
   const d = ctx.session.uploadData;
   const lines = [
-    "📋 Upload summary:\n",
-    `Title: ${d.title}`,
-    `Artist: ${d.artist}`,
+    "📋 Ringkasan upload:\n",
+    `Judul: ${d.title}`,
+    `Artis: ${d.artist}`,
     `Album: ${d.album}`,
-    `Source: ${d.sourceType}`,
-    "\nConfirm upload?",
+    `Sumber: ${d.sourceType}`,
+    "\nKonfirmasi upload?",
   ];
 
   await ctx.editMessageText(lines.join("\n"), {
     reply_markup: inlineKeyboard([
-      [inlineButton("✅ Confirm", "upload:confirm")],
-      [inlineButton("Cancel", "upload:cancel")],
+      [inlineButton("✅ Konfirmasi", "upload:confirm")],
+      [inlineButton("Batal", "upload:cancel")],
     ]),
   });
 });
@@ -153,9 +153,9 @@ composer.callbackQuery("upload:confirm", async (ctx) => {
 
   await saveTrack({
     id: trackId,
-    title: d.title ?? "Untitled",
-    artist: d.artist ?? "Unknown",
-    album: d.album ?? "Unknown",
+    title: d.title ?? "Tanpa Judul",
+    artist: d.artist ?? "Tidak Diketahui",
+    album: d.album ?? "Tidak Diketahui",
     formats: ["flac", "alac", "mp3", "aac"],
     sourceType: (d.sourceType as "owner" | "licensed") ?? "owner",
     licenseStatus: d.sourceType === "licensed" ? "pending" : "active",
@@ -168,11 +168,13 @@ composer.callbackQuery("upload:confirm", async (ctx) => {
   ctx.session.uploadData = undefined;
 
   await ctx.editMessageText(
-    `✅ Track uploaded successfully!\n\n${d.artist} — ${d.title}\n\nThe track is now available in the library.`,
+    `✅ Track berhasil diunggah!\n\n${d.artist} — ${d.title}\n\nTrack sekarang tersedia di koleksi.`,
     {
       reply_markup: inlineKeyboard([
-        [inlineButton("🎵 View library", "library:curated")],
-        [inlineButton("⬅️ Back to menu", "menu:main")],
+        [inlineButton("🎵 Lihat koleksi", "library:curated")],
+        [inlineButton("📤 Upload lagi", "menu:upload")],
+        [inlineButton("📋 Kelola track", "admin:tracks")],
+        [inlineButton("⬅️ Kembali ke menu", "menu:main")],
       ]),
     },
   );

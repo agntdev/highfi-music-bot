@@ -8,7 +8,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "Admin access required. Contact the bot owner for permissions."
+              "text": "Akses admin diperlukan. Hubungi pemilik bot untuk izin."
             }
           }
         ]
@@ -24,7 +24,7 @@
           {
             "method": "editMessageText",
             "payload": {
-              "text": "Admin access required."
+              "text": "Akses admin diperlukan."
             }
           }
         ]

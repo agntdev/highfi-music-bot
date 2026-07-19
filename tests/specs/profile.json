@@ -8,7 +8,7 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "You're not registered yet. Tap /start to get started."
+              "text": "Kamu belum terdaftar. Ketuk /start untuk memulai."
             }
           }
         ]
@@ -24,7 +24,7 @@
           {
             "method": "editMessageText",
             "payload": {
-              "text": "You're not registered yet. Tap /start to get started."
+              "text": "Kamu belum terdaftar. Ketuk /start untuk memulai."
             }
           }
         ]
@@ -41,7 +41,49 @@
           {
             "method": "sendMessage",
             "payload": {
-              "text": "👤 Your profile\n\nQuality: FLAC\nLanguage: en\nTracks played: 0"
+              "text": "👤 Profilmu\n\nKualitas: FLAC\nBahasa: id\nTrack diputar: 0"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "profile settings shows quality options",
+    "steps": [
+      { "send": { "text": "/start" }, "expect": [] },
+      {
+        "send": { "callback": "menu:profile" },
+        "expect": []
+      },
+      {
+        "send": { "callback": "profile:settings" },
+        "expect": [
+          {
+            "method": "editMessageText",
+            "payload": {
+              "text": "⚙️ Pengaturan\n\nKualitas saat ini: FLAC\nBahasa: Indonesia"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "profile history shows empty state",
+    "steps": [
+      { "send": { "text": "/start" }, "expect": [] },
+      {
+        "send": { "callback": "menu:profile" },
+        "expect": []
+      },
+      {
+        "send": { "callback": "profile:history" },
+        "expect": [
+          {
+            "method": "editMessageText",
+            "payload": {
+              "text": "Belum ada riwayat putar. Mulai putar beberapa track!"
             }
           }
         ]

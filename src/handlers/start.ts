@@ -3,13 +3,13 @@ import type { Ctx } from "../bot.js";
 import { mainMenuKeyboard, registerMainMenuItem } from "../toolkit/index.js";
 import { getUser, saveUser, addUserToIndex, now } from "../store.js";
 
-registerMainMenuItem({ label: "🔍 Search", data: "menu:search", order: 10 });
-registerMainMenuItem({ label: "🎵 Library", data: "library:curated", order: 20 });
-registerMainMenuItem({ label: "👤 Profile", data: "menu:profile", order: 30 });
+registerMainMenuItem({ label: "🔍 Cari", data: "menu:search", order: 10 });
+registerMainMenuItem({ label: "🎵 Koleksi", data: "library:curated", order: 20 });
+registerMainMenuItem({ label: "👤 Profil", data: "menu:profile", order: 30 });
 
 const composer = new Composer<Ctx>();
 
-const WELCOME = "👋 Welcome! Tap a button below to get started.";
+const WELCOME = "👋 Selamat datang! Ketuk tombol di bawah untuk mulai.";
 
 composer.command("start", async (ctx) => {
   const userId = ctx.from?.id;
@@ -19,7 +19,7 @@ composer.command("start", async (ctx) => {
       await saveUser({
         telegramId: userId,
         registeredAt: now(),
-        preferences: { quality: "flac", language: "en" },
+        preferences: { quality: "flac", language: "id" },
         listeningHistory: [],
       });
       await addUserToIndex(userId);
